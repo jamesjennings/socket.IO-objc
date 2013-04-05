@@ -731,7 +731,7 @@ NSString* const SocketIOException = @"SocketIOException";
 - (BOOL) connection:(NSURLConnection *)connection
 canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace
 {
-    return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
+    return (self.authPassword && self.authUsername) || [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
 }
 
 - (void) connection:(NSURLConnection *)connection
@@ -745,6 +745,9 @@ didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
             NSURLCredential *credential = [NSURLCredential credentialForTrust:trust];
             [challenge.sender useCredential:credential forAuthenticationChallenge:challenge];
         }
+    }else if (self.authPassword && self.authUsername) {
+        NSURLCredential *authCred = [NSURLCredential credentialWithUser:self.authUsername password:self.authPassword persistence:NSURLCredentialPersistenceForSession];
+        [challenge.sender useCredential:authCred forAuthenticationChallenge:challenge];
     }
     
     [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
